@@ -15,14 +15,13 @@ using namespace std;
 #define N_THREADS 20.0 
 
 __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsigned int width, unsigned int height) {
-    
+
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     int idy = threadIdx.y + blockIdx.y * blockDim.y;
     float Gx, Gy; //Kernel para las direcciones x e y
     float G;
-    float Gx_0_0,Gx_0_1,Gx_0_2,Gx_1_0,Gx_1_1,Gx_1_2,Gx_2_0,Gx_2_1,Gx_2_2,
-          Gy_0_0,Gy_0_1,Gy_0_2,Gy_1_0,Gy_1_1,Gy_1_2,Gy_2_0,Gy_2_1,Gy_2_2;
-          
+    float G_0_0,G_0_1,G_0_2,G_1_0,G_1_1,G_1_2,G_2_0,G_2_1,G_2_2;
+
     /* Comprobar los limites de la imagen */
     if(idx > 0 && idy > 0 && idx < width-1 && idy < height-1) { 
 
@@ -31,23 +30,23 @@ __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsi
         Gx => -2 0 +2        Gy =>  0  0  0     
               -1 0 +1              +1 +2 +1
         ***********************************/
-        Gx_0_0 = src_img[(idy-1)*width + (idx-1)];                      Gy_0_0 = src_img[(idy-1)*width + (idx-1)];  
-        Gx_0_1 = src_img[(idy-1)*width + (idx)];                        Gy_0_1 = src_img[(idy-1)*width + (idx)];
-        Gx_0_2 = src_img[(idy-1)*width + (idx+1)];                      Gy_0_2 = src_img[(idy-1)*width + (idx+1)];
-        Gx_1_0 = src_img[(idy)*width + (idx-1)];                        Gy_1_0 = src_img[(idy)*width + (idx-1)];
-        Gx_1_1 = src_img[(idy)*width + (idx)];                          Gy_1_1 = src_img[(idy)*width + (idx)];
-        Gx_1_2 = src_img[(idy)*width + (idx+1)];                        Gy_1_2 = src_img[(idy)*width + (idx+1)];
-        Gx_2_0 = src_img[(idy+1)*width + (idx-1)];                      Gy_2_0 = src_img[(idy+1)*width + (idx-1)];
-        Gx_2_1 = src_img[(idy+1)*width + (idx)];                        Gy_2_1 = src_img[(idy+1)*width + (idx)];
-        Gx_2_2 = src_img[(idy+1)*width + (idx+1)];                      Gy_2_2 = src_img[(idy+1)*width + (idx+1)];
+        G_0_0 = src_img[(idy-1)*width + (idx-1)];                
+        G_0_1 = src_img[(idy-1)*width + (idx)];                       
+        G_0_2 = src_img[(idy-1)*width + (idx+1)];                      
+        G_1_0 = src_img[(idy)*width + (idx-1)];                        
+        G_1_1 = src_img[(idy)*width + (idx)];                          
+        G_1_2 = src_img[(idy)*width + (idx+1)];                        
+        G_2_0 = src_img[(idy+1)*width + (idx-1)];                      
+        G_2_1 = src_img[(idy+1)*width + (idx)];                        
+        G_2_2 = src_img[(idy+1)*width + (idx+1)];                      
 
-        Gx = (-1 * Gx_0_0) + (0 * Gx_0_1) + (1 * Gx_0_2) +
-             (-2 * Gx_1_0) + (0 * Gx_1_1) + (2 * Gx_1_2) +
-             (-1 * Gx_2_0) + (0 * Gx_2_1) + (1 * Gx_2_2);
+        Gx = (-1 * G_0_0) + (0 * G_0_1) + (1 * G_0_2) +
+             (-2 * G_1_0) + (0 * G_1_1) + (2 * G_1_2) +
+             (-1 * G_2_0) + (0 * G_2_1) + (1 * G_2_2);
 
-        Gy = (1 * Gy_0_0) + (2 * Gy_0_1) + (1 * Gy_0_2) +
-             (0 * Gy_1_0) + (0 * Gy_1_1) + (0 * Gy_1_2) +
-             (-1 * Gy_2_0) + (-2 * Gy_2_1) + (-1 * Gy_2_2);
+        Gy = (1 * G_0_0) + (2 * G_0_1) + (1 * G_0_2) +
+             (0 * G_1_0) + (0 * G_1_1) + (0 * G_1_2) +
+             (-1 * G_2_0) + (-2 * G_2_1) + (-1 * G_2_2);
         
         /* El gradiente resultante (G) es la raiz cuadrada de (Gx^2 + Gy^2) */
         G = sqrt(pow(Gx,2) + pow(Gy,2));
