@@ -47,12 +47,12 @@ __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsi
 }
 
 int main(int argc, char*argv[]) {
-    /** Check command line arguments **/
+    /** Comprobar linea de comandos **/
     if(argc < 2 || argc > 3) {
         printf("\033[1;31mError: Invalid number of command line arguments.\nUsage: %s [image.png] [filter_option]\033[0m \n", argv[0]);
         return 1;
     }
-    /** Gather CUDA device properties **/
+    /** Propiedades de nuestro dispositvo CUDA **/
 	cudaDeviceProp dev_properties;
 	cudaGetDeviceProperties(&dev_properties, 0);
 	int cores = dev_properties.multiProcessorCount;
@@ -83,7 +83,7 @@ int main(int argc, char*argv[]) {
         break;
     }
     
-    /** Print out some header information (# of hardware threads, GPU info, etc) **/
+    /** Imprimir informacion (hardware threads, GPU info, etc) **/
     printf("CPU: %d hardware threads\n", std::thread::hardware_concurrency());
     printf("GPU: %s, CUDA %d.%d, %zd Mbytes global memory, %d CUDA cores\n",
     dev_properties.name, dev_properties.major, dev_properties.minor, dev_properties.totalGlobalMem / 1048576, cores);
@@ -121,12 +121,12 @@ int main(int argc, char*argv[]) {
     unsigned int img_data_width = modified_img.cols;
     int img_data_size = img_data_width * img_data_height;
 
-    /** Finally, we use the GPU to parallelize it further **/
-    /** Allocate space in the GPU for our original img, new img, and dimensions **/
+    /** Asignar espacio en la GPU para nuestra original img, new img, y dimensiones **/
     unsigned char *src_img, *out_img;
     cudaMalloc( (void**)&src_img, img_data_size);
     cudaMalloc( (void**)&out_img, img_data_size);
-    /** Transfer over the memory from host to device and memset the sobel array to 0s **/
+
+    /** Transferir memoria del host al device **/
     cudaMemcpy(src_img, modified_img.data, img_data_size, cudaMemcpyHostToDevice);
    
     /** set up the dim3's for the gpu to use as arguments (threads per block & num of blocks)**/
@@ -137,19 +137,20 @@ int main(int argc, char*argv[]) {
     auto c = std::chrono::system_clock::now();
     filter_Sobel<<<numBlocks, threadsPerBlock>>>(src_img, out_img, img_data_width, img_data_height);
 
-    cudaError_t cudaerror = cudaDeviceSynchronize(); // waits for completion, returns error code
+    cudaError_t cudaerror = cudaDeviceSynchronize(); // esperar a completarse, returns error code
     if ( cudaerror != cudaSuccess ) fprintf( stderr, "Cuda failed to synchronize: %s\n", cudaGetErrorName(cudaerror) ); // if error, output error
     std::chrono::duration<double> time_gpu = std::chrono::system_clock::now() - c;
-    /** Copy data back to CPU from GPU **/
+
+    /** Copiar datos de vuelta al host **/
     cudaMemcpy(modified_img.data, out_img, img_data_size, cudaMemcpyDeviceToHost);
 
-    /** Tamaño de nuestra iamgen **/
+    /** Tamaño de nuestra imagen **/
     printf("\nProcessing %s: \033[1;34m%d\033[0m rows x \033[1;34m%d\033[0m columns\nTotal size: \033[1;34m%d\033[0m pixels \r\n", argv[1], img_data_width, img_data_height, img_data_size);
 
-    /** Write image **/
-    imwrite( "output_image.png", modified_img ); // Show our image inside it.
+    /** Escribir imagen mediante OpenCV **/
+    imwrite( "output_image.png", modified_img );
 
-    /** Free any memory leftover.. gpuImig, cpuImg, and ompImg get their pixels free'd while writing **/
+    /** Liberar memoria asignada previamente **/
     cudaFree(src_img);
     cudaFree(out_img);
     return 0;
