@@ -129,11 +129,11 @@ int main(int argc, char*argv[]) {
     /** Transferir memoria del host al device **/
     cudaMemcpy(src_img, modified_img.data, img_data_size, cudaMemcpyHostToDevice);
    
-    /** set up the dim3's for the gpu to use as arguments (threads per block & num of blocks)**/
+    /** Preparar argumentos dim3 para la GPU (threads per block & num of blocks)**/
     dim3 threadsPerBlock(GRIDVAL, GRIDVAL, 1);
     dim3 numBlocks(ceil(img_data_width/GRIDVAL), ceil(img_data_height/GRIDVAL), 1); //ceil para redondear valores al alza
 
-    /** Run the sobel filter using the CPU **/
+    /** Sobel mediante GPU **/
     auto c = std::chrono::system_clock::now();
     filter_Sobel<<<numBlocks, threadsPerBlock>>>(src_img, out_img, img_data_width, img_data_height);
 
