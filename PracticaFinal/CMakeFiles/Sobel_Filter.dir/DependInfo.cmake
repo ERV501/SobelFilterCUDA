@@ -4,13 +4,13 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CUDA
-  "/home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/Image_filter.cu" "/home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles/Sobel_Filter.dir/Image_filter.cu.o"
+  "/home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/Image_filter.cu" "/home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles/Sobel_Filter.dir/Image_filter.cu.o"
   )
 set(CMAKE_CUDA_COMPILER_ID "NVIDIA")
 
 # The include file search paths:
 set(CMAKE_CUDA_TARGET_INCLUDE_PATH
-  "/usr/include/opencv4"
+  "/usr/local/include/opencv4"
   )
 
 # Targets to which this target links.

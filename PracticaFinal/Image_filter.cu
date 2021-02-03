@@ -68,7 +68,19 @@ int main(int argc, char*argv[]) {
 	case 6: // Pascal
 		if (dev_properties.minor == 1) cores *= 128;
 		else if (dev_properties.minor == 0) cores *= 64;
-		break;
+        break;
+    case 7: // Volta and Turing
+        if ((dev_properties.minor == 0) || (dev_properties.minor == 5)) cores *= 64;
+        else printf("Unknown device type\n");
+        break;
+    case 8: // Ampere
+        if (dev_properties.minor == 0) cores *= 64;
+        else if (dev_properties.minor == 6) cores *= 128;
+        else printf("Unknown device type\n");
+        break;
+    default:
+        printf("Unknown device type\n"); 
+        break;
     }
     
     /** Print out some header information (# of hardware threads, GPU info, etc) **/

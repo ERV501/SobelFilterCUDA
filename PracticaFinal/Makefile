@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal
+CMAKE_SOURCE_DIR = /home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal
+CMAKE_BINARY_DIR = /home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -69,8 +69,8 @@ rebuild_cache/fast: rebuild_cache
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
+	/usr/bin/cmake-gui -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles /home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles /home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

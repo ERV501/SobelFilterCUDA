@@ -1,3 +1,3 @@
-/home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles/rebuild_cache.dir
-/home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles/edit_cache.dir
-/home/erv501/Avanzados_CUDA/PracticaFinal/@PracticaFinal/CMakeFiles/Sobel_Filter.dir
+/home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles/rebuild_cache.dir
+/home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles/edit_cache.dir
+/home/erv501/Trabajos/SobelFilterCUDA/PracticaFinal/CMakeFiles/Sobel_Filter.dir
