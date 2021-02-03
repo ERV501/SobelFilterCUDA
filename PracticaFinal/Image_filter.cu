@@ -12,7 +12,8 @@
 using namespace cv;
 using namespace std;
 
-#define N_THREADS 20.0 
+//Numero de hilos por bloque
+#define N_THREADS 32.0
 
 __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsigned int width, unsigned int height) {
 
@@ -50,6 +51,7 @@ __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsi
         
         /* El gradiente resultante (G) es la raiz cuadrada de (Gx^2 + Gy^2) */
         G = sqrt(pow(Gx,2) + pow(Gy,2));
+
         /* Modificamos el pixel que estamos comprobando */
         if(G > 255){  
             out_img[idy*width + idx] = 255;     //En caso de que sobrepasemos el valor maximo posible para este pixel (255), ponemos este ultimo como su valor actual
@@ -144,7 +146,7 @@ int main(int argc, char*argv[]) {
     cudaMemcpy(src_img, modified_img.data, img_data_size, cudaMemcpyHostToDevice);
    
     /** Preparar argumentos dim3 para la GPU (threads per block & num of blocks)**/
-    dim3 dimBlocks(N_THREADS, N_THREADS); //hebras por bloque, bloque de 2 dimensiones
+    dim3 dimBlocks(N_THREADS, N_THREADS, 1); //hebras por bloque, bloque de 2 dimensiones
     dim3 dimGrid(ceil(img_data_width/N_THREADS), ceil(img_data_height/N_THREADS), 1); //numero de bloques (ceil para redondear valores al alza)
 
     auto start_time = chrono::system_clock::now(); //Tiempo inicio
