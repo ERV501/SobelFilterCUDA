@@ -12,7 +12,7 @@
 using namespace cv;
 using namespace std;
 
-#define GRIDVAL 20.0 
+#define N_THREADS 20.0 
 
 __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsigned int width, unsigned int height) {
     
@@ -20,7 +20,9 @@ __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsi
     int idy = threadIdx.y + blockIdx.y * blockDim.y;
     float Gx, Gy; //Kernel para las direcciones x e y
     float G;
-
+    float Gx_0_0,Gx_0_1,Gx_0_2,Gx_1_0,Gx_1_1,Gx_1_2,Gx_2_0,Gx_2_1,Gx_2_2,
+          Gy_0_0,Gy_0_1,Gy_0_2,Gy_1_0,Gy_1_1,Gy_1_2,Gy_2_0,Gy_2_1,Gy_2_2;
+          
     /* Comprobar los limites de la imagen */
     if(idx > 0 && idy > 0 && idx < width-1 && idy < height-1) { 
 
@@ -29,19 +31,31 @@ __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsi
         Gx => -2 0 +2        Gy =>  0  0  0     
               -1 0 +1              +1 +2 +1
         ***********************************/
+        Gx_0_0 = src_img[(idy-1)*width + (idx-1)];                      Gy_0_0 = src_img[(idy-1)*width + (idx-1)];  
+        Gx_0_1 = src_img[(idy-1)*width + (idx)];                        Gy_0_1 = src_img[(idy-1)*width + (idx)];
+        Gx_0_2 = src_img[(idy-1)*width + (idx+1)];                      Gy_0_2 = src_img[(idy-1)*width + (idx+1)];
+        Gx_1_0 = src_img[(idy)*width + (idx-1)];                        Gy_1_0 = src_img[(idy)*width + (idx-1)];
+        Gx_1_1 = src_img[(idy)*width + (idx)];                          Gy_1_1 = src_img[(idy)*width + (idx)];
+        Gx_1_2 = src_img[(idy)*width + (idx+1)];                        Gy_1_2 = src_img[(idy)*width + (idx+1)];
+        Gx_2_0 = src_img[(idy+1)*width + (idx-1)];                      Gy_2_0 = src_img[(idy+1)*width + (idx-1)];
+        Gx_2_1 = src_img[(idy+1)*width + (idx)];                        Gy_2_1 = src_img[(idy+1)*width + (idx)];
+        Gx_2_2 = src_img[(idy+1)*width + (idx+1)];                      Gy_2_2 = src_img[(idy+1)*width + (idx+1)];
 
-        Gx = (-1*src_img[(idy-1)*width + (idx-1)]) + (-2*src_img[idy*width+(idx-1)]) + (-1*src_img[(idy+1)*width+(idx-1)]) +
-             (src_img[(idy-1)*width + (idx+1)]) + (2*src_img[idy*width+(idx+1)]) + (1*src_img[(idy+1)*width+(idx+1)]);
-             
-        Gy = (1*src_img[(idy-1)*width + (idx-1)]) + (2*src_img[(idy-1)*width+idx]) + (1*src_img[(idy-1)*width+(idx+1)]) +
-             (-1*src_img[(idy+1)*width + (idx-1)]) + (-2*src_img[(idy+1)*width+idx]) + (-1*src_img[(idy+1)*width+(idx+1)]);
+        Gx = (-1 * Gx_0_0) + (0 * Gx_0_1) + (1 * Gx_0_2) +
+             (-2 * Gx_1_0) + (0 * Gx_1_1) + (2 * Gx_1_2) +
+             (-1 * Gx_2_0) + (0 * Gx_2_1) + (1 * Gx_2_2);
+
+        Gy = (1 * Gy_0_0) + (2 * Gy_0_1) + (1 * Gy_0_2) +
+             (0 * Gy_1_0) + (0 * Gy_1_1) + (0 * Gy_1_2) +
+             (-1 * Gy_2_0) + (-2 * Gy_2_1) + (-1 * Gy_2_2);
         
         /* El gradiente resultante (G) es la raiz cuadrada de (Gx^2 + Gy^2) */
         G = sqrt(pow(Gx,2) + pow(Gy,2));
+        /* Modificamos el pixel que estamos comprobando */
         if(G > 255){  
             out_img[idy*width + idx] = 255;     //En caso de que sobrepasemos el valor maximo posible para este pixel (255), ponemos este ultimo como su valor actual
         }else{
-            out_img[idy*width + idx] = G;
+            out_img[idy*width + idx] = G;       //Cualquier otro caso -> valor correspondiente
         }
     }
 }
@@ -126,20 +140,23 @@ int main(int argc, char*argv[]) {
     cudaMalloc( (void**)&src_img, img_data_size);
     cudaMalloc( (void**)&out_img, img_data_size);
 
+    
     /** Transferir memoria del host al device **/
     cudaMemcpy(src_img, modified_img.data, img_data_size, cudaMemcpyHostToDevice);
    
     /** Preparar argumentos dim3 para la GPU (threads per block & num of blocks)**/
-    dim3 threadsPerBlock(GRIDVAL, GRIDVAL, 1);
-    dim3 numBlocks(ceil(img_data_width/GRIDVAL), ceil(img_data_height/GRIDVAL), 1); //ceil para redondear valores al alza
+    dim3 dimBlocks(N_THREADS, N_THREADS); //hebras por bloque, bloque de 2 dimensiones
+    dim3 dimGrid(ceil(img_data_width/N_THREADS), ceil(img_data_height/N_THREADS), 1); //numero de bloques (ceil para redondear valores al alza)
+
+    auto start_time = chrono::system_clock::now(); //Tiempo inicio
+
+    auto c = std::chrono::system_clock::now();
 
     /** Sobel mediante GPU **/
-    auto c = std::chrono::system_clock::now();
-    filter_Sobel<<<numBlocks, threadsPerBlock>>>(src_img, out_img, img_data_width, img_data_height);
+    filter_Sobel<<<dimGrid, dimBlocks>>>(src_img, out_img, img_data_width, img_data_height);
 
-    cudaError_t cudaerror = cudaDeviceSynchronize(); // esperar a completarse, returns error code
-    if ( cudaerror != cudaSuccess ) fprintf( stderr, "Cuda failed to synchronize: %s\n", cudaGetErrorName(cudaerror) ); // if error, output error
-    std::chrono::duration<double> time_gpu = std::chrono::system_clock::now() - c;
+    chrono::duration<double> end_time = chrono::system_clock::now() - start_time; //Tiempo final
+    printf("Execution time: \033[1;34m%*.5f\033[0m miliseconds\n",5,1000*end_time.count()); //Imprimir tiempo de ejecucion
 
     /** Copiar datos de vuelta al host **/
     cudaMemcpy(modified_img.data, out_img, img_data_size, cudaMemcpyDeviceToHost);
