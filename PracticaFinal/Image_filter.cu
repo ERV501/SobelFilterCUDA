@@ -13,7 +13,7 @@ using namespace cv;
 using namespace std;
 
 //Numero de hilos por bloque
-#define N_THREADS 32.0
+#define N_THREADS 32
 
 __global__ void filter_Sobel(unsigned char* src_img,unsigned char* out_img, unsigned int width, unsigned int height) {
 
@@ -150,7 +150,6 @@ int main(int argc, char*argv[]) {
     dim3 dimGrid(ceil(img_data_width/N_THREADS), ceil(img_data_height/N_THREADS), 1); //numero de bloques (ceil para redondear valores al alza)
 
     auto start_time = chrono::system_clock::now(); //Tiempo inicio
-
     auto c = std::chrono::system_clock::now();
 
     /** Sobel mediante GPU **/
